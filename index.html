@@ -11,7 +11,7 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      color: white;
+      color: #fff;
       font-family: Arial, sans-serif;
       font-size: 20px;
     }
@@ -20,18 +20,16 @@
 <body>
   <div id="loading">Loading 3D model...</div>
 
-  <!-- ✅ Load libraries FIRST -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/examples/js/controls/OrbitControls.js"></script>
+  <!-- Use ES Modules -->
+  <script type="module">
+    import * as THREE from "https://unpkg.com/three@0.161.0/build/three.module.js";
+    import { OrbitControls } from "https://unpkg.com/three@0.161.0/examples/jsm/controls/OrbitControls.js";
+    import { GLTFLoader } from "https://unpkg.com/three@0.161.0/examples/jsm/loaders/GLTFLoader.js";
 
-  <!-- ✅ Your code AFTER libraries -->
-  <script>
-    // At this point THREE must exist
-    console.log("Three.js version:", THREE.REVISION); // Debug check
+    console.log("Three.js loaded:", THREE);
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(2, 2, 4);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -47,24 +45,24 @@
     dirLight.position.set(5, 10, 7.5);
     scene.add(dirLight);
 
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
 
-    const loader = new THREE.GLTFLoader();
+    const loader = new GLTFLoader();
     loader.load(
-      'scene.gltf',
-      function (gltf) {
-        document.getElementById('loading').style.display = 'none';
+      "scene.gltf",
+      (gltf) => {
+        document.getElementById("loading").style.display = "none";
         scene.add(gltf.scene);
       },
-      undefined,
-      function (error) {
-        console.error('Error loading model:', error);
-        document.getElementById('loading').innerText = 'Failed to load model';
+      (xhr) => console.log((xhr.loaded / xhr.total * 100).toFixed(2) + "% loaded"),
+      (error) => {
+        console.error("Error loading model:", error);
+        document.getElementById("loading").innerText = "Failed to load model";
       }
     );
 
-    window.addEventListener('resize', () => {
+    window.addEventListener("resize", () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
