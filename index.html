@@ -4,83 +4,54 @@
     <meta charset="UTF-8" />
     <title>Three.js GLTF Viewer</title>
     <style>
-      body { margin: 0; overflow: hidden; }
+      body { margin: 0; }
       canvas { display: block; }
-      #loading {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-family: sans-serif;
-        font-size: 18px;
-        color: white;
-      }
     </style>
   </head>
   <body>
     <div id="loading">Loading 3D model...</div>
-
     <script type="module">
       import * as THREE from "https://unpkg.com/three@0.161.0/build/three.module.js";
       import { OrbitControls } from "https://unpkg.com/three@0.161.0/examples/jsm/controls/OrbitControls.js";
       import { GLTFLoader } from "https://unpkg.com/three@0.161.0/examples/jsm/loaders/GLTFLoader.js";
 
-      // Scene setup
       const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        1000
-      );
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
       const renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
       document.body.appendChild(renderer.domElement);
 
-      // Lights
       const light = new THREE.DirectionalLight(0xffffff, 1);
-      light.position.set(5, 5, 5).normalize();
+      light.position.set(2, 2, 5).normalize();
       scene.add(light);
 
-      const ambientLight = new THREE.AmbientLight(0x404040, 2); // soft light
-      scene.add(ambientLight);
-
-      // Controls
-      const controls = new OrbitControls(camera, renderer.domElement);
-      camera.position.set(0, 1, 5);
-      controls.update();
-
-      // Load GLTF model
       const loader = new GLTFLoader();
-      loader.load(
-        "scene.gltf",
+      loader.load("scene.gltf",
         (gltf) => {
-          scene.add(gltf.scene);
           document.getElementById("loading").style.display = "none";
+          scene.add(gltf.scene);
+          camera.position.z = 5;
+          const controls = new OrbitControls(camera, renderer.domElement);
+          animate();
         },
         (xhr) => {
           console.log((xhr.loaded / xhr.total * 100) + "% loaded");
         },
         (error) => {
-          console.error("Error loading model:", error);
-          document.getElementById("loading").innerText = "Failed to load model.";
+          console.error("An error happened", error);
         }
       );
 
-      // Handle window resize
+      function animate() {
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+      }
+
       window.addEventListener("resize", () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
-
-      // Animation loop
-      function animate() {
-        requestAnimationFrame(animate);
-        controls.update();
-        renderer.render(scene, camera);
-      }
-      animate();
     </script>
   </body>
 </html>
